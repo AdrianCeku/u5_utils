@@ -197,6 +197,10 @@ function u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit)
         onExit = onExit
     }
 
+    if marker then
+        marker.coords = coords
+    end
+
     interactTable[id] = interactPoint
     
     return id
