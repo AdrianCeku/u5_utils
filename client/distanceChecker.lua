@@ -185,6 +185,7 @@ function start()
 end
 
 function u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit)
+    print("Adding interact point")
     local indexX, indexY = getSectionsIndexFromCoords(coords)
     local id = getInteractPointId()
 
