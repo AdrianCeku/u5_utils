@@ -3,46 +3,54 @@ local HAS_DISTANCE_CHECKER_STARTED = false
 local INTERACT_POINTS = {}
 local INTERACT_POINTS_ID = 0
 
-local maxX = 5000
-local maxY = 10000
+--+--+--+--+--+--+--+ SETUP +--+--+--+--+--+--+--+
 
-local minX = -5000
-local minY = -5000
+local function setupDistanceChecker()
+    local maxX = 5000
+    local maxY = 10000
 
-local totalDistanceX = maxX - minX
-local totalDistanceY = maxY - minY
+    local minX = -5000
+    local minY = -5000
 
-local sectionsAmountX = 10
-local sectionsAmountY = 15
+    local totalDistanceX = maxX - minX
+    local totalDistanceY = maxY - minY
 
-local sectionSizeX = totalDistanceX / sectionsAmountX
-local sectionSizeY = totalDistanceY / sectionsAmountY
+    local sectionsAmountX = 10
+    local sectionsAmountY = 15
 
-local sectionsX = {}
-local sectionsY = {}
+    local sectionSizeX = totalDistanceX / sectionsAmountX
+    local sectionSizeY = totalDistanceY / sectionsAmountY
 
+    local sectionsX = {}
+    local sectionsY = {}
 
-for i = 1, sectionsAmountX do
-    sectionsX[i] = {
-        start = minX + (i - 1) * sectionSizeX,
-        stop = minX + i * sectionSizeX,
-    }
-end
-
-for i = 1, sectionsAmountY do
-    sectionsY[i] = {
-        start = minY + (i - 1) * sectionSizeY,
-        stop = minY + i * sectionSizeY
-    }
-end
-
-for i = 1, sectionsAmountX do
-    INTERACT_POINTS[i] = {}
-
-    for j = 1, sectionsAmountY do
-        INTERACT_POINTS[i][j] = {}
+    for i = 1, sectionsAmountX do
+        sectionsX[i] = {
+            start = minX + (i - 1) * sectionSizeX,
+            stop = minX + i * sectionSizeX,
+        }
     end
+
+    for i = 1, sectionsAmountY do
+        sectionsY[i] = {
+            start = minY + (i - 1) * sectionSizeY,
+            stop = minY + i * sectionSizeY
+        }
+    end
+
+    for i = 1, sectionsAmountX do
+        INTERACT_POINTS[i] = {}
+
+        for j = 1, sectionsAmountY do
+            INTERACT_POINTS[i][j] = {}
+        end
+    end
+
 end
+
+setupDistanceChecker()
+
+--+--+--+--+--+--+--+ HELPERS +--+--+--+--+--+--+--+
 
 local function getInteractPointId()
     local id = INTERACT_POINTS_ID
@@ -106,7 +114,9 @@ local function getMarkersAndInteractPoints(interactPoints, coords)
     return drawableMarkers, interactablePoints
 end
 
-function u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit)
+--+--+--+--+--+--+--+ EXPORT FUNCTIONS +--+--+--+--+--+--+--+
+
+local function addInteractPoint(coords, range, marker, onEnter, onExit)
     if not HAS_DISTANCE_CHECKER_STARTED then
         startDistanceChecker()
     end
@@ -132,7 +142,7 @@ function u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit)
     return id
 end
 
-function u5_utils.deleteInteractPoint(id)
+local function deleteInteractPoint(id)
     for i = 1, #INTERACT_POINTS do
         for j = 1, #INTERACT_POINTS[i] do
             if INTERACT_POINTS[i][j][id] then
@@ -147,28 +157,7 @@ function u5_utils.deleteInteractPoint(id)
     end
 end
 
-RegisterCommand("addInteractPoint", function()
-    local coords = GetEntityCoords(PlayerPedId())
-    local range = 5
-    local marker = {
-        coords = coords,
-        range = 20
-    }
-    local onEnter = function()
-        print("Entered")
-    end
-
-    local onExit = function()
-        print("Exited")
-    end
-
-    print(u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit))
-
-end, false)
-
-RegisterCommand("deleteInteractPoint", function()
-    u5_utils.deleteInteractPoint("0")
-end, false)
+--+--+--+--+--+--+--+ MAIN +--+--+--+--+--+--+--+
 
 function startDistanceChecker()
     HAS_DISTANCE_CHECKER_STARTED = true
@@ -255,3 +244,33 @@ end
 function stopDistanceChecker()
     HAS_DISTANCE_CHECKER_STARTED = false
 end
+
+--+--+--+--+--+--+--+ EXPORTS +--+--+--+--+--+--+--+
+
+exports("addInteractPoint", addInteractPoint)
+exports("deleteInteractPoint", deleteInteractPoint)
+
+--+--+--+--+--+--+--+ DEBUG +--+--+--+--+--+--+--+
+
+RegisterCommand("addInteractPoint", function()
+    local coords = GetEntityCoords(PlayerPedId())
+    local range = 5
+    local marker = {
+        coords = coords,
+        range = 20
+    }
+    local onEnter = function()
+        print("Entered")
+    end
+
+    local onExit = function()
+        print("Exited")
+    end
+
+    print(u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit))
+
+end, false)
+
+RegisterCommand("deleteInteractPoint", function()
+    u5_utils.deleteInteractPoint("0")
+end, false)

@@ -34,7 +34,7 @@ local function getResolveCallbackId()
     return NEXT_RESOLVE_CALLBACK_ID
 end
 
-function triggerServerCallback(serverCallbackName, data)
+local function triggerServerCallback(serverCallbackName, data)
     local promise = promise:new()
     local clientCallbackId = getResolveCallbackId()
 
@@ -55,3 +55,8 @@ AddEventHandler("u5_utils:client:callbackResult", function(clientCallbackId, res
         resolveFunction(response)
     end
 end)
+
+--+--+--+--+--+--+--+ EXPORTS +--+--+--+--+--+--+--+
+
+exports("createClientCallback", createClientCallback)
+exports("triggerServerCallback", triggerServerCallback)
