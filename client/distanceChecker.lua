@@ -3,6 +3,10 @@ local HAS_DISTANCE_CHECKER_STARTED = false
 local INTERACT_POINTS = {}
 local INTERACT_POINTS_ID = 0
 
+local SECTIONS_X = {}
+local SECTIONS_Y = {}
+
+
 --+--+--+--+--+--+--+ SETUP +--+--+--+--+--+--+--+
 
 local function setupDistanceChecker()
@@ -21,18 +25,15 @@ local function setupDistanceChecker()
     local sectionSizeX = totalDistanceX / sectionsAmountX
     local sectionSizeY = totalDistanceY / sectionsAmountY
 
-    local sectionsX = {}
-    local sectionsY = {}
-
     for i = 1, sectionsAmountX do
-        sectionsX[i] = {
+        SECTIONS_X[i] = {
             start = minX + (i - 1) * sectionSizeX,
             stop = minX + i * sectionSizeX,
         }
     end
 
     for i = 1, sectionsAmountY do
-        sectionsY[i] = {
+        SECTIONS_Y[i] = {
             start = minY + (i - 1) * sectionSizeY,
             stop = minY + i * sectionSizeY
         }
@@ -68,13 +69,13 @@ local function areCoordsInSectionY(coords, section)
 end
 
 local function getSectionsIndexFromCoords(coords)
-    for i = 1, #sectionsX do
-        local sectionX = sectionsX[i]
+    for i = 1, #SECTIONS_X do
+        local sectionX = SECTIONS_X[i]
 
         if areCoordsInSectionX(coords, sectionX) then
 
-            for j = 1, #sectionsY do
-                local sectionY = sectionsY[j]
+            for j = 1, #SECTIONS_Y do
+                local sectionY = SECTIONS_Y[j]
 
                 if areCoordsInSectionY(coords, sectionY) then
                     return i, j
@@ -99,14 +100,14 @@ local function getMarkersAndInteractPoints(interactPoints, coords)
 
     for id, point in pairs(interactPoints) do
         if point.marker then
-            if u5_utils.areCoordsNearCoords(coords, point.coords, point.marker.range) then
+            if areCoordsNearCoords(coords, point.coords, point.marker.range) then
                 table.insert(drawableMarkers, point.marker)
 
-                if u5_utils.areCoordsNearCoords(coords, point.coords, point.range) then
+                if areCoordsNearCoords(coords, point.coords, point.range) then
                     table.insert(interactablePoints, point)
                 end
             end
-        elseif u5_utils.areCoordsNearCoords(coords, point.coords, point.range) then
+        elseif areCoordsNearCoords(coords, point.coords, point.range) then
             table.insert(interactablePoints, point)
         end
     end
@@ -267,10 +268,10 @@ RegisterCommand("addInteractPoint", function()
         print("Exited")
     end
 
-    print(u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit))
+    print(addInteractPoint(coords, range, marker, onEnter, onExit))
 
 end, false)
 
 RegisterCommand("deleteInteractPoint", function()
-    u5_utils.deleteInteractPoint("0")
+    deleteInteractPoint("0")
 end, false)
