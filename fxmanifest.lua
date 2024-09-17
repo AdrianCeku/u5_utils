@@ -15,11 +15,14 @@ shared_scripts{
 }
 
 client_scripts{
-	"client/main.lua",
 	"client/functions.lua",
 	"client/distanceChecker.lua",
+	"client/callbacks.lua",
+	"client/main.lua",
 }
 
 server_scripts{
-	"server/*"
+	"server/functions.lua",
+	"server/callbacks.lua",
+	"server/main.lua",
 }
