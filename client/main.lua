@@ -1,7 +1,11 @@
 u5_utils = {}
 
-function u5_utils.createCallback(clientCallbackName, callbackFunction)
-    createCallback(clientCallbackName, callbackFunction)
+function u5_utils.createClientCallback(clientCallbackName, callbackFunction)
+    createClientCallback(clientCallbackName, callbackFunction)
+end
+
+function u5_utils.triggerServerCallback(serverCallbackName, payload)
+    return triggerServerCallback(serverCallbackName, payload)
 end
 
 exports("getObject", function()
