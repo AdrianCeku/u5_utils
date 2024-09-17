@@ -1,3 +1,5 @@
+local HAS_DISTANCE_CHECKER_STARTED = false
+
 local INTERACT_POINTS = {}
 local INTERACT_POINTS_ID = 0
 
@@ -104,14 +106,80 @@ local function getMarkersAndInteractPoints(interactPoints, coords)
     return drawableMarkers, interactablePoints
 end
 
-function start()
+function u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit)
+    if not HAS_DISTANCE_CHECKER_STARTED then
+        startDistanceChecker()
+    end
+    print("Adding interact point")
+    local indexX, indexY = getSectionsIndexFromCoords(coords)
+    local id = getInteractPointId()
+
+    local interactTable = INTERACT_POINTS[indexX][indexY]
+    local interactPoint = {
+        coords = coords,
+        range = range,
+        marker = marker,
+        onEnter = onEnter,
+        onExit = onExit
+    }
+
+    if marker then
+        marker.coords = coords
+    end
+
+    interactTable[id] = interactPoint
+    
+    return id
+end
+
+function u5_utils.deleteInteractPoint(id)
+    for i = 1, #INTERACT_POINTS do
+        for j = 1, #INTERACT_POINTS[i] do
+            if INTERACT_POINTS[i][j][id] then
+                INTERACT_POINTS[i][j][id] = nil
+                return
+            end
+        end
+    end
+
+    if #INTERACT_POINTS == {} then
+        stopDistanceChecker()
+    end
+end
+
+RegisterCommand("addInteractPoint", function()
+    local coords = GetEntityCoords(PlayerPedId())
+    local range = 5
+    local marker = {
+        coords = coords,
+        range = 20
+    }
+    local onEnter = function()
+        print("Entered")
+    end
+
+    local onExit = function()
+        print("Exited")
+    end
+
+    print(u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit))
+
+end, false)
+
+RegisterCommand("deleteInteractPoint", function()
+    u5_utils.deleteInteractPoint("0")
+end, false)
+
+function startDistanceChecker()
+    HAS_DISTANCE_CHECKER_STARTED = true
+    
     local currentSectionX, currentSectionY = getPlayerSectionsIndex()
     local currentInteractPoints = getInteractPointsInSection(currentSectionX, currentSectionY)
     local nearbyMarkers = {}
     local nearbyInteractPoints = {}
 
     Citizen.CreateThread(function()
-        while true do
+        while HAS_DISTANCE_CHECKER_STARTED do
             Citizen.Wait(2500)
             currentSectionX, currentSectionY = getPlayerSectionsIndex()
             currentInteractPoints = getInteractPointsInSection(currentSectionX, currentSectionY)
@@ -119,7 +187,7 @@ function start()
     end)
 
     Citizen.CreateThread(function()
-        while true do
+        while HAS_DISTANCE_CHECKER_STARTED do
             Citizen.Wait(1000)
             local markers, points = getMarkersAndInteractPoints(currentInteractPoints, GetEntityCoords(PlayerPedId()))
             nearbyMarkers = markers
@@ -128,7 +196,7 @@ function start()
     end)
 
     Citizen.CreateThread(function()
-        while true do
+        while HAS_DISTANCE_CHECKER_STARTED do
             Citizen.Wait(0)
             for i = 1, #nearbyMarkers do
                 local marker = nearbyMarkers[i]
@@ -164,7 +232,7 @@ function start()
     Citizen.CreateThread(function()
         local previousPoints = {}
 
-        while true do 
+        while HAS_DISTANCE_CHECKER_STARTED do 
             Citizen.Wait(100)
 
             for id, point in pairs(nearbyInteractPoints) do
@@ -184,61 +252,6 @@ function start()
     end)
 end
 
-function u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit)
-    print("Adding interact point")
-    local indexX, indexY = getSectionsIndexFromCoords(coords)
-    local id = getInteractPointId()
-
-    local interactTable = INTERACT_POINTS[indexX][indexY]
-    local interactPoint = {
-        coords = coords,
-        range = range,
-        marker = marker,
-        onEnter = onEnter,
-        onExit = onExit
-    }
-
-    if marker then
-        marker.coords = coords
-    end
-
-    interactTable[id] = interactPoint
-    
-    return id
+function stopDistanceChecker()
+    HAS_DISTANCE_CHECKER_STARTED = false
 end
-
-function u5_utils.deleteInteractPoint(id)
-    for i = 1, #INTERACT_POINTS do
-        for j = 1, #INTERACT_POINTS[i] do
-            if INTERACT_POINTS[i][j][id] then
-                INTERACT_POINTS[i][j][id] = nil
-                return
-            end
-        end
-    end
-end
-
-start()
-
-RegisterCommand("addInteractPoint", function()
-    local coords = GetEntityCoords(PlayerPedId())
-    local range = 5
-    local marker = {
-        coords = coords,
-        range = 20
-    }
-    local onEnter = function()
-        print("Entered")
-    end
-
-    local onExit = function()
-        print("Exited")
-    end
-
-    print(u5_utils.addInteractPoint(coords, range, marker, onEnter, onExit))
-
-end, false)
-
-RegisterCommand("deleteInteractPoint", function()
-    u5_utils.deleteInteractPoint("0")
-end, false)
