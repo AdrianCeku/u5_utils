@@ -1,12 +1,5 @@
-local RESOLVE_CALLBACKS = {}
-local NEXT_RESOLVE_CALLBACK_ID = 0
-
+--+--+--+--+--+--+--+ CLIENT CALLBACKS +--+--+--+--+--+--+--+
 local CLIENT_CALLBACKS = {}
-
-local function getResolveCallbackId()
-    NEXT_RESOLVE_CALLBACK_ID = NEXT_RESOLVE_CALLBACK_ID + 1
-    return NEXT_RESOLVE_CALLBACK_ID
-end
 
 function createClientCallback(clientCallbackName, callbackFunction)
     if CLIENT_CALLBACKS[clientCallbackName] then
@@ -17,7 +10,31 @@ function createClientCallback(clientCallbackName, callbackFunction)
     CLIENT_CALLBACKS[clientCallbackName] = callbackFunction
 end
 
-function triggerServerCallback(serverCallbackName, payload)
+RegisterNetEvent("u5_utils:client:triggerCallback")
+AddEventHandler("u5_utils:client:triggerCallback", function(clientCallbackName, serverCallbackId, data)
+    local callbackFunction = CLIENT_CALLBACKS[clientCallbackName]
+
+    if callbackFunction then
+        local retval = callbackFunction(data)
+        TriggerServerEvent("u5_utils:server:callbackResult", serverCallbackId, retval)
+    else
+        print("Client Callback with name " .. clientCallbackName .. " does not exist.")
+        return
+    end
+
+end)
+
+--+--+--+--+--+--+--+ SERVER CALLBACKS +--+--+--+--+--+--+--+
+
+local RESOLVE_CALLBACKS = {}
+local NEXT_RESOLVE_CALLBACK_ID = 0
+
+local function getResolveCallbackId()
+    NEXT_RESOLVE_CALLBACK_ID = NEXT_RESOLVE_CALLBACK_ID + 1
+    return NEXT_RESOLVE_CALLBACK_ID
+end
+
+function triggerServerCallback(serverCallbackName, data)
     local promise = promise:new()
     local clientCallbackId = getResolveCallbackId()
 
@@ -25,28 +42,13 @@ function triggerServerCallback(serverCallbackName, payload)
         promise:resolve(source, response)
     end
 
-    TriggerServerEvent("u5_utils:server:triggerCallback", clientCallbackId, serverCallbackName, payload)
+    TriggerServerEvent("u5_utils:server:triggerCallback", serverCallbackName, clientCallbackId, data)
 
     return Citizen.Await(promise)
 end
 
-RegisterNetEvent("u5_utils:client:triggerCallback")
-AddEventHandler("u5_utils:client:triggerCallback", function(serverCallbackId, clientCallbackName, payload)
-    local callbackFunction = CLIENT_CALLBACKS[clientCallbackName]
-    local retval
-
-    if callbackFunction then
-        retval = callbackFunction(payload)
-    else
-        print("Client Callback with name " .. clientCallbackName .. " does not exist.")
-        return
-    end
-
-    TriggerServerEvent("u5_utils:server:callbackReslut", serverCallbackId, retval)
-end)
-
-RegisterNetEvent("u5_utils:client:callbackReslut")
-AddEventHandler("u5_utils:client:callbackReslut", function(clientCallbackId, response)
+RegisterNetEvent("u5_utils:client:callbackResult")
+AddEventHandler("u5_utils:client:callbackResult", function(clientCallbackId, response)
     local resolveFunction = RESOLVE_CALLBACKS[clientCallbackId]
 
     if resolveFunction then
