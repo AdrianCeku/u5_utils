@@ -153,7 +153,7 @@ local function deleteInteractPoint(id)
         end
     end
 
-    if #INTERACT_POINTS == {} then
+    if INTERACT_POINTS == {} then
         stopDistanceChecker()
     end
 end
