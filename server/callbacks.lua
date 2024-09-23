@@ -56,8 +56,3 @@ AddEventHandler("u5_utils:server:callbackResult", function(serverCallbackId, res
         resolveFunction(response)
     end
 end)
-
---+--+--+--+--+--+--+ EXPORTS +--+--+--+--+--+--+--+
-
-exports("createServerCallback", createServerCallback)
-exports("triggerClientCallback", triggerClientCallback)

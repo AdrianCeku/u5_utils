@@ -19,10 +19,12 @@ client_scripts{
 	"client/functions.lua",
 	"client/distanceChecker.lua",
 	"client/callbacks.lua",
+	"client/exports.lua",
 }
 
 server_scripts{
 	"server/functions.lua",
 	"server/callbacks.lua",
 	"server/main.lua",
+	"server/exports.lua",
 }
